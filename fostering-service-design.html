@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genesis Chronicle — 咖啡树寄养服务系统设计</title>
+<style>
+  :root {
+    --bg: #000000;
+    --surface: #16181c;
+    --surface-2: #1a1c20;
+    --border: #2f3336;
+    --border-hover: #3d4144;
+    --accent: #1d9bf0;
+    --accent-soft: rgba(29, 155, 240, 0.12);
+    --green: #00ba7c;
+    --green-soft: rgba(0, 186, 124, 0.1);
+    --amber: #ffb547;
+    --text: #e7e9ea;
+    --text-2: #71767b;
+    --text-3: #536471;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans SC", sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(0,0,0,0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 53px;
+  }
+  .nav-brand {
+    font-weight: 700; font-size: 18px; letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-brand .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+  }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-links a {
+    color: var(--text-2); text-decoration: none; font-size: 14px;
+    font-weight: 500; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 120px; }
+  .hero { margin-bottom: 72px; }
+  .hero h1 {
+    font-size: 34px; font-weight: 700; letter-spacing: -0.03em;
+    margin-bottom: 12px; line-height: 1.15;
+  }
+  .hero .subtitle {
+    font-size: 17px; color: var(--text-2); max-width: 680px;
+  }
+  .hero .meta {
+    display: flex; gap: 16px; margin-top: 20px;
+    font-size: 13px; color: var(--text-3);
+  }
+  .hero .meta span {
+    display: flex; align-items: center; gap: 4px;
+  }
+  .hero .meta .tag {
+    background: var(--accent-soft); color: var(--accent);
+    padding: 2px 10px; border-radius: 20px; font-weight: 500;
+  }
+  .section { margin-bottom: 64px; scroll-margin-top: 70px; }
+  .section-header {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 24px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-size: 13px; color: var(--accent); font-weight: 600;
+    font-family: "SF Mono", "Fira Code", monospace;
+  }
+  .section-header h2 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+  }
+  .section-header .desc {
+    font-size: 14px; color: var(--text-2); margin-left: auto;
+  }
+  p { font-size: 15px; color: var(--text); margin-bottom: 16px; }
+  p.muted { color: var(--text-2); }
+  .card-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--border-hover); }
+  .card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin-bottom: 16px;
+  }
+  .card.green .card-icon { background: var(--green-soft); }
+  .card h3 {
+    font-size: 16px; font-weight: 600; margin-bottom: 8px;
+  }
+  .card p { font-size: 14px; color: var(--text-2); margin-bottom: 0; }
+  .card ul {
+    list-style: none; margin-top: 12px;
+  }
+  .card ul li {
+    font-size: 13px; color: var(--text-2);
+    padding: 6px 0; padding-left: 18px; position: relative;
+  }
+  .card ul li::before {
+    content: ""; position: absolute; left: 0; top: 13px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .card.green ul li::before { background: var(--green); }
+
+  /* Feature matrix table */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 14px 16px; text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600; color: var(--text-2);
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;
+    background: var(--surface);
+  }
+  td:first-child { font-weight: 500; }
+  tr:hover td { background: var(--surface-2); }
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 500;
+  }
+  .badge.blue { background: var(--accent-soft); color: var(--accent); }
+  .badge.green { background: var(--green-soft); color: var(--green); }
+  .badge.amber { background: rgba(255,181,71,0.12); color: var(--amber); }
+  .badge.gray { background: var(--surface); color: var(--text-2); }
+
+  /* Timeline */
+  .timeline {
+    position: relative; padding-left: 32px;
+  }
+  .timeline::before {
+    content: ""; position: absolute; left: 8px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 32px;
+  }
+  .timeline-item::before {
+    content: ""; position: absolute; left: -28px; top: 4px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--accent);
+  }
+  .timeline-item.green::before { border-color: var(--green); }
+  .timeline-item .time {
+    font-size: 12px; color: var(--accent); font-weight: 600;
+    font-family: "SF Mono", "Fira Code", monospace;
+    margin-bottom: 4px;
+  }
+  .timeline-item.green .time { color: var(--green); }
+  .timeline-item h4 {
+    font-size: 16px; font-weight: 600; margin-bottom: 6px;
+  }
+  .timeline-item p {
+    font-size: 14px; color: var(--text-2); margin: 0;
+  }
+
+  /* Profit split bars */
+  .split-bar {
+    display: flex; height: 36px; border-radius: 8px;
+    overflow: hidden; margin: 20px 0;
+  }
+  .split-seg {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+    color: #fff;
+  }
+  .split-legend {
+    display: flex; flex-wrap: wrap; gap: 20px;
+    font-size: 13px; color: var(--text-2);
+  }
+  .split-legend .dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 3px; margin-right: 6px; vertical-align: middle;
+  }
+
+  /* API endpoints */
+  .endpoint {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .method {
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 6px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    min-width: 56px; text-align: center;
+  }
+  .method.GET { background: var(--green-soft); color: var(--green); }
+  .method.POST { background: var(--accent-soft); color: var(--accent); }
+  .method.PUT { background: rgba(255,181,71,0.12); color: var(--amber); }
+  .endpoint .path {
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 14px; color: var(--text);
+  }
+  .endpoint .desc {
+    font-size: 13px; color: var(--text-2); margin-left: auto;
+  }
+
+  /* Data model */
+  .model-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .model-card h4 {
+    font-size: 15px; font-weight: 600; margin-bottom: 12px;
+    color: var(--accent);
+    font-family: "SF Mono", "Fira Code", monospace;
+  }
+  .model-fields {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+  }
+  .field {
+    font-size: 13px; font-family: "SF Mono", "Fira Code", monospace;
+  }
+  .field .name { color: var(--text); }
+  .field .type { color: var(--text-3); }
+  .field .pk { color: var(--amber); font-weight: 600; }
+
+  /* Service plans */
+  .plans {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  }
+  @media (max-width: 768px) { .plans { grid-template-columns: 1fr; } }
+  .plan {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    position: relative;
+  }
+  .plan.featured {
+    border-color: var(--accent);
+    border-width: 2px;
+  }
+  .plan .plan-tag {
+    position: absolute; top: -10px; left: 24px;
+    background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 12px; border-radius: 20px;
+  }
+  .plan h4 {
+    font-size: 18px; font-weight: 700; margin-bottom: 4px;
+  }
+  .plan .price {
+    font-size: 28px; font-weight: 700; margin: 12px 0;
+  }
+  .plan .price .unit {
+    font-size: 14px; color: var(--text-2); font-weight: 400;
+  }
+  .plan ul {
+    list-style: none; margin-top: 16px;
+  }
+  .plan ul li {
+    font-size: 13px; color: var(--text-2);
+    padding: 8px 0; padding-left: 24px; position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .plan ul li::before {
+    content: "✓"; position: absolute; left: 0;
+    color: var(--green); font-weight: 600;
+  }
+  .plan ul li:last-child { border-bottom: none; }
+
+  /* Highlight box */
+  .highlight {
+    background: var(--accent-soft);
+    border: 1px solid rgba(29, 155, 240, 0.25);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 24px 0;
+  }
+  .highlight.green {
+    background: var(--green-soft);
+    border-color: rgba(0, 186, 124, 0.25);
+  }
+  .highlight h4 {
+    font-size: 14px; font-weight: 600; color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .highlight.green h4 { color: var(--green); }
+  .highlight p {
+    font-size: 14px; color: var(--text-2); margin: 0;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--text-3); font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <span class="dot"></span>
+    Genesis Chronicle
+  </div>
+  <ul class="nav-links">
+    <li><a href="#service-flow">服务流程</a></li>
+    <li><a href="#profit">利润分配</a></li>
+    <li><a href="#features">功能矩阵</a></li>
+    <li><a href="#plans">寄养方案</a></li>
+    <li><a href="#api">API 设计</a></li>
+    <li><a href="#data-model">数据模型</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>咖啡树寄养服务系统设计</h1>
+    <div class="subtitle">
+      在雾化水培碳减排系统基础上，新增个人/企业咖啡树寄养服务入口——
+      通过「寄养—减排—采收—共享」闭环，将碳减排贡献转化为可追溯的实物回报与利润分配。
+    </div>
+    <div class="meta">
+      <span class="tag">v1.0</span>
+      <span>项目: Genesis Chronicle</span>
+      <span>日期: 2026-07-03</span>
+      <span>作者: Coda ⚡</span>
+    </div>
+  </div>
+
+  <!-- 1. Service Flow -->
+  <div class="section" id="service-flow">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>寄养服务全流程</h2>
+      <span class="desc">从申请到交付的 7 步闭环</span>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time">STEP 1 — 寄养申请</div>
+        <h4>个人或企业提交寄养申请</h4>
+        <p>用户通过 Web/App 进入寄养入口，选择寄养方案（单株/多株/企业批量），填写寄养人信息、配送地址、收益偏好（实物/现金/混合）。企业用户额外填写 ESG 报告需求与碳信用核销目标。</p>
+      </div>
+      <div class="timeline-item">
+        <div class="time">STEP 2 — 智能匹配</div>
+        <h4>系统匹配寄养人 × 种植器 × 场地</h4>
+        <p>根据寄养人偏好（品种、周期、预算），系统自动匹配可用的雾化种植器及其所在场地（酒店/咖啡店/合作农场）。匹配维度包括：设备容量、地理位置、品种适配、碳减排预期。</p>
+      </div>
+      <div class="timeline-item green">
+        <div class="time">STEP 3 — 寄养期（6–18 个月）</div>
+        <h4>实时减排轨迹追踪</h4>
+        <p>寄养期内，系统持续采集三维度数据并推送给寄养人：<br>
+        · <strong>碳减排轨迹</strong> — CO₂ 固碳量按日/周/月累积，自动生成减排曲线图<br>
+        · <strong>生长可视化</strong> — 定时拍摄寄养咖啡树图像 + 生物量增长数据<br>
+        · <strong>社区互动</strong> — 给树留言、解锁成长成就、寄养人排行榜</p>
+      </div>
+      <div class="timeline-item green">
+        <div class="time">STEP 4 — 采收与加工</div>
+        <h4>咖啡豆采收、脱壳、烘焙、包装</h4>
+        <p>咖啡果成熟后由场地方执行采收，系统记录采收批次。加工环节可选择浅/中/深烘焙度，包装印有寄养人专属碳标签（含 QR 码可追溯完整寄养周期与减排数据）。</p>
+      </div>
+      <div class="timeline-item">
+        <div class="time">STEP 5 — 成果分配</div>
+        <h4>三条交付线并行执行</h4>
+        <p><strong>通道 A（实物）</strong>：咖啡豆直接邮寄至寄养人/企业地址<br>
+        <strong>通道 B（现金）</strong>：咖啡豆进入市场销售，收益按比例自动结算至寄养人钱包<br>
+        <strong>通道 C（碳资产）</strong>：碳信用额度 + ESG 报告交付</p>
+      </div>
+      <div class="timeline-item">
+        <div class="time">STEP 6 — 酒店代寄服务</div>
+        <h4>酒店场景专属 — 住客碳归属 + 代寄</h4>
+        <p>酒店将住客入住期间对应寄养咖啡树的碳减排量归属至住客账户。退房时，酒店可代为将咖啡豆邮寄给住客（住客可选择寄至家中或企业），并附寄养碳减排证书。</p>
+      </div>
+      <div class="timeline-item green">
+        <div class="time">STEP 7 — 续约或转赠</div>
+        <h4>寄养周期结束 — 续约 / 转赠 / 终止</h4>
+        <p>寄养人可选择续约下一周期（优先匹配原设备）、将寄养权转赠他人（礼品场景）、或终止寄养。终止时系统出具完整周期碳减排总结报告。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Profit Split -->
+  <div class="section" id="profit">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>利润分配与成果共享</h2>
+      <span class="desc">四方分账 + 双通道回报</span>
+    </div>
+
+    <p>咖啡豆进入市场销售后，收益池按以下比例自动分配。分配比例在寄养协议签署时锁定，通过智能合约自动执行结算。</p>
+
+    <div class="split-bar">
+      <div class="split-seg" style="background: #1d9bf0; width: 40%;">寄养人 40%</div>
+      <div class="split-seg" style="background: #00ba7c; width: 30%;">场地 30%</div>
+      <div class="split-seg" style="background: #6b7280; width: 20%;">平台 20%</div>
+      <div class="split-seg" style="background: #ffb547; width: 10%;">碳基金 10%</div>
+    </div>
+    <div class="split-legend">
+      <span><span class="dot" style="background:#1d9bf0;"></span>寄养人 — 现金分红 + 碳积分</span>
+      <span><span class="dot" style="background:#00ba7c;"></span>场地方 — 酒店/咖啡店/农场运营收益</span>
+      <span><span class="dot" style="background:#6b7280;"></span>平台 — 技术运维 + 物流 + 管理</span>
+      <span><span class="dot" style="background:#ffb547;"></span>碳基金 — 再投资于新种植设备</span>
+    </div>
+
+    <div class="card-grid" style="margin-top: 32px;">
+      <div class="card">
+        <div class="card-icon">A</div>
+        <h3>通道 A — 实物回报</h3>
+        <p>咖啡豆采收加工后直接邮寄至寄养人指定地址</p>
+        <ul>
+          <li>包装印有寄养人专属碳标签 + 可追溯 QR 码</li>
+          <li>可选浅/中/深烘焙度</li>
+          <li>酒店可代住客执行代寄（退房时触发）</li>
+          <li>企业批量寄养可定制企业品牌包装</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">B</div>
+        <h3>通道 B — 现金回报</h3>
+        <p>咖啡豆进入市场销售后按 40% 比例分红</p>
+        <ul>
+          <li>销售渠道：合作咖啡店零售 + 线上商城 + B2B 批发</li>
+          <li>收益自动结算至寄养人电子钱包</li>
+          <li>支持提现至银行卡 / 微信 / 支付宝</li>
+          <li>每笔交易区块链记录，可审计</li>
+        </ul>
+      </div>
+      <div class="card green">
+        <div class="card-icon">C</div>
+        <h3>通道 C — 碳资产交付</h3>
+        <p>寄养周期内累积的碳减排量转化为碳信用</p>
+        <ul>
+          <li>个人：碳积分兑换商城权益 / 社交分享</li>
+          <li>企业：碳信用核销 + ESG 报告 + 年度白皮书</li>
+          <li>可选保留碳信用进入 VCS 市场交易</li>
+          <li>酒店住客：碳减排量归属住客账户</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight green">
+      <h4>酒店代寄服务 — 闭环设计</h4>
+      <p>住客入住期间，酒店将对应客房的寄养咖啡树碳减排量按入住天数归属至住客。退房时住客可选择：① 咖啡豆邮寄到家/企业 ② 碳减排证书电子版发送至邮箱 ③ 累积至下次入住。酒店通过代寄服务获得额外收入（寄养场地 30% 分成 + 代寄服务费），同时增强绿色酒店品牌价值。</p>
+    </div>
+  </div>
+
+  <!-- 3. Feature Matrix -->
+  <div class="section" id="features">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>多角色功能矩阵</h2>
+      <span class="desc">个人 / 企业 / 酒店 / 咖啡店</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>功能模块</th>
+            <th>个人寄养人</th>
+            <th>企业 ESG 客户</th>
+            <th>酒店（寄养场地）</th>
+            <th>咖啡店（寄养场地）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>寄养申请入口</td>
+            <td><span class="badge blue">1–5 株</span></td>
+            <td><span class="badge blue">50+ 株批量</span></td>
+            <td><span class="badge blue">客房级分配</span></td>
+            <td><span class="badge blue">吧台阵列</span></td>
+          </tr>
+          <tr>
+            <td>减排轨迹看板</td>
+            <td>手机端日历 + 曲线</td>
+            <td>ESG 后台 + API 导出</td>
+            <td>大堂展示屏</td>
+            <td>吧台实时数据屏</td>
+          </tr>
+          <tr>
+            <td>生长可视化</td>
+            <td><span class="badge green">含</span></td>
+            <td><span class="badge green">含</span></td>
+            <td><span class="badge green">含 + 住客扫码查看</span></td>
+            <td><span class="badge green">含 + 顾客扫码查看</span></td>
+          </tr>
+          <tr>
+            <td>咖啡豆邮寄</td>
+            <td>寄至个人地址</td>
+            <td>批量寄至企业</td>
+            <td><span class="badge amber">代寄至住客</span></td>
+            <td>到店自取 / 邮寄</td>
+          </tr>
+          <tr>
+            <td>利润分红</td>
+            <td><span class="badge green">40% 自动结算</span></td>
+            <td><span class="badge green">40% 企业钱包</span></td>
+            <td><span class="badge green">30% 场地分成</span></td>
+            <td><span class="badge green">30% 场地分成</span></td>
+          </tr>
+          <tr>
+            <td>碳信用处置</td>
+            <td>积分兑换 / 社交</td>
+            <td><span class="badge amber">VCS 核销 / 交易</span></td>
+            <td>住客碳归属</td>
+            <td>碳中和杯标</td>
+          </tr>
+          <tr>
+            <td>ESG 报告</td>
+            <td>年度个人摘要</td>
+            <td><span class="badge amber">ISO 14064 + CDP</span></td>
+            <td>绿色酒店认证</td>
+            <td>供应链碳披露</td>
+          </tr>
+          <tr>
+            <td>社区互动</td>
+            <td>成就 / 排行 / 留言</td>
+            <td>企业碳贡献排行</td>
+            <td>住客绿色入住积分</td>
+            <td>顾客碳标签扫码互动</td>
+          </tr>
+          <tr>
+            <td>寄养权转赠</td>
+            <td><span class="badge green">礼品卡场景</span></td>
+            <td>内部分配</td>
+            <td>住客退房转赠</td>
+            <td>顾客消费满额赠送</td>
+          </tr>
+          <tr>
+            <td>代寄服务费</td>
+            <td>—</td>
+            <td>—</td>
+            <td><span class="badge amber">额外收入</span></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Service Plans -->
+  <div class="section" id="plans">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>寄养方案</h2>
+      <span class="desc">三档方案覆盖全场景</span>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <h4>个人·单株</h4>
+        <div class="price">¥300<span class="unit">/年</span></div>
+        <ul>
+          <li>寄养 1 株咖啡树（6–18 个月周期）</li>
+          <li>实时碳减排轨迹 + 生长图像</li>
+          <li>采收后邮寄 200g 烘焙咖啡豆</li>
+          <li>个人碳减排证书</li>
+          <li>社区成就 + 排行榜</li>
+          <li>寄养权转赠（礼品卡）</li>
+        </ul>
+      </div>
+      <div class="plan featured">
+        <div class="plan-tag">推荐</div>
+        <h4>个人·多株</h4>
+        <div class="price">¥1,200<span class="unit">/年</span></div>
+        <ul>
+          <li>寄养 5 株咖啡树</li>
+          <li>全部个人版功能</li>
+          <li>采收后邮寄 1kg 烘焙咖啡豆</li>
+          <li>可选现金分红（40% 收益）</li>
+          <li>专属碳标签包装</li>
+          <li>优先匹配优质种植器</li>
+          <li>年度碳减排总结报告</li>
+        </ul>
+      </div>
+      <div class="plan">
+        <h4>企业·ESG</h4>
+        <div class="price">议价</div>
+        <ul>
+          <li>50+ 株批量寄养</li>
+          <li>企业 ESG 后台 + API</li>
+          <li>ISO 14064 减排报告</li>
+          <li>VCS 碳信用核销 / 交易</li>
+          <li>企业品牌定制包装</li>
+          <li>年度碳贡献白皮书</li>
+          <li>CDP / TCFD 报告导出</li>
+          <li>专属客户经理</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <h4>酒店/咖啡店 — 场地合作方案</h4>
+      <p>场地方无需支付寄养费，而是通过提供种植空间获得 30% 咖啡豆销售分成 + 代寄服务费（酒店专属）。系统提供场地管理后台，支持设备状态监控、采收排期、住客/顾客碳归属分配、分成结算查询。</p>
+    </div>
+  </div>
+
+  <!-- 5. API Design -->
+  <div class="section" id="api">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>API 设计</h2>
+      <span class="desc">寄养服务核心接口</span>
+    </div>
+
+    <div class="endpoint">
+      <span class="method POST">POST</span>
+      <span class="path">/api/v1/fostering/apply</span>
+      <span class="desc">提交寄养申请（个人/企业）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/api/v1/fostering/{id}</span>
+      <span class="desc">查询寄养申请状态与匹配结果</span>
+    </div>
+    <div class="endpoint">
+      <span class="method POST">POST</span>
+      <span class="path">/api/v1/fostering/{id}/match</span>
+      <span class="desc">触发智能匹配（系统自动执行）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/api/v1/fostering/{id}/trajectory</span>
+      <span class="desc">获取减排轨迹（日/周/月聚合）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/api/v1/fostering/{id}/growth</span>
+      <span class="desc">获取生长图像与生物量数据</span>
+    </div>
+    <div class="endpoint">
+      <span class="method POST">POST</span>
+      <span class="path">/api/v1/fostering/{id}/harvest</span>
+      <span class="desc">触发采收（场地方执行）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method POST">POST</span>
+      <span class="path">/api/v1/fostering/{id}/ship</span>
+      <span class="desc">咖啡豆邮寄下单（含酒店代寄）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/api/v1/fostering/{id}/profit</span>
+      <span class="desc">查询利润分红记录与钱包余额</span>
+    </div>
+    <div class="endpoint">
+      <span class="method POST">POST</span>
+      <span class="path">/api/v1/fostering/{id}/transfer</span>
+      <span class="desc">寄养权转赠（礼品卡场景）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/api/v1/fostering/{id}/certificate</span>
+      <span class="desc">生成碳减排证书（PDF）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/api/v1/enterprise/{org_id}/esg-report</span>
+      <span class="desc">企业 ESG 报告导出（ISO 14064）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method PUT">PUT</span>
+      <span class="path">/api/v1/hotel/{hotel_id}/guest-assign</span>
+      <span class="desc">酒店住客碳归属分配（入住/退房触发）</span>
+    </div>
+    <div class="endpoint">
+      <span class="method POST">POST</span>
+      <span class="path">/api/v1/fostering/{id}/renew</span>
+      <span class="desc">续约下一寄养周期</span>
+    </div>
+  </div>
+
+  <!-- 6. Data Model -->
+  <div class="section" id="data-model">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>数据模型</h2>
+      <span class="desc">寄养服务核心实体</span>
+    </div>
+
+    <div class="model-card">
+      <h4>fostering_application（寄养申请）</h4>
+      <div class="model-fields">
+        <div class="field"><span class="name">id</span> <span class="type">UUID</span> <span class="pk">PK</span></div>
+        <div class="field"><span class="name">applicant_type</span> <span class="type">ENUM(personal, enterprise)</span></div>
+        <div class="field"><span class="name">applicant_id</span> <span class="type">UUID FK→user/org</span></div>
+        <div class="field"><span class="name">tree_count</span> <span class="type">INT</span></div>
+        <div class="field"><span class="name">plan_id</span> <span class="type">FK→fostering_plan</span></div>
+        <div class="field"><span class="name">duration_months</span> <span class="type">INT (6–18)</span></div>
+        <div class="field"><span class="name">reward_pref</span> <span class="type">ENUM(beans, cash, mixed)</span></div>
+        <div class="field"><span class="name">roast_level</span> <span class="type">ENUM(light, medium, dark)</span></div>
+        <div class="field"><span class="name">shipping_addr</span> <span class="type">JSON</span></div>
+        <div class="field"><span class="name">esg_requirements</span> <span class="type">JSON (nullable)</span></div>
+        <div class="field"><span class="name">status</span> <span class="type">ENUM(pending, matched, active, harvested, closed)</span></div>
+        <div class="field"><span class="name">created_at</span> <span class="type">TIMESTAMP</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <h4>fostering_match（寄养匹配）</h4>
+      <div class="model-fields">
+        <div class="field"><span class="name">id</span> <span class="type">UUID</span> <span class="pk">PK</span></div>
+        <div class="field"><span class="name">application_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">device_id</span> <span class="type">UUID FK→device</span></div>
+        <div class="field"><span class="name">venue_id</span> <span class="type">UUID FK→venue</span></div>
+        <div class="field"><span class="name">venue_type</span> <span class="type">ENUM(hotel, cafe, farm)</span></div>
+        <div class="field"><span class="name">tree_count</span> <span class="type">INT</span></div>
+        <div class="field"><span class="name">start_date</span> <span class="type">DATE</span></div>
+        <div class="field"><span class="name">expected_harvest</span> <span class="type">DATE</span></div>
+        <div class="field"><span class="name">profit_ratio</span> <span class="type">JSON {fosterer:0.4, venue:0.3, platform:0.2, fund:0.1}</span></div>
+        <div class="field"><span class="name">contract_hash</span> <span class="type">VARCHAR (blockchain)</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <h4>carbon_trajectory（减排轨迹）</h4>
+      <div class="model-fields">
+        <div class="field"><span class="name">id</span> <span class="type">UUID</span> <span class="pk">PK</span></div>
+        <div class="field"><span class="name">match_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">device_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">date</span> <span class="type">DATE</span></div>
+        <div class="field"><span class="name">co2_sequestered_g</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">biomass_g</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">energy_kwh</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">water_ml</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">net_reduction_g</span> <span class="type">DECIMAL (computed)</span></div>
+        <div class="field"><span class="name">cumulative_g</span> <span class="type">DECIMAL (computed)</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <h4>harvest_batch（采收批次）</h4>
+      <div class="model-fields">
+        <div class="field"><span class="name">id</span> <span class="type">UUID</span> <span class="pk">PK</span></div>
+        <div class="field"><span class="name">match_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">harvest_date</span> <span class="type">DATE</span></div>
+        <div class="field"><span class="name">cherry_weight_g</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">green_bean_g</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">roasted_bean_g</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">roast_level</span> <span class="type">ENUM</span></div>
+        <div class="field"><span class="name">sale_channel</span> <span class="type">ENUM(retail, b2b, direct_ship)</span></div>
+        <div class="field"><span class="name">sale_price_cents</span> <span class="type">INT</span></div>
+        <div class="field"><span class="name">fosterer_payout_cents</span> <span class="type">INT (computed)</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <h4>shipment（邮寄记录）</h4>
+      <div class="model-fields">
+        <div class="field"><span class="name">id</span> <span class="type">UUID</span> <span class="pk">PK</span></div>
+        <div class="field"><span class="name">batch_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">match_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">ship_type</span> <span class="type">ENUM(direct, hotel_proxy)</span></div>
+        <div class="field"><span class="name">recipient_name</span> <span class="type">VARCHAR</span></div>
+        <div class="field"><span class="name">recipient_addr</span> <span class="type">JSON</span></div>
+        <div class="field"><span class="name">tracking_no</span> <span class="type">VARCHAR</span></div>
+        <div class="field"><span class="name">carbon_label_qr</span> <span class="type">VARCHAR (URL)</span></div>
+        <div class="field"><span class="name">status</span> <span class="type">ENUM(pending, shipped, delivered)</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <h4>profit_ledger（利润账本）</h4>
+      <div class="model-fields">
+        <div class="field"><span class="name">id</span> <span class="type">UUID</span> <span class="pk">PK</span></div>
+        <div class="field"><span class="name">match_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">batch_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">party_type</span> <span class="type">ENUM(fosterer, venue, platform, fund)</span></div>
+        <div class="field"><span class="name">party_id</span> <span class="type">UUID</span></div>
+        <div class="field"><span class="name">amount_cents</span> <span class="type">INT</span></div>
+        <div class="field"><span class="name">ratio</span> <span class="type">DECIMAL</span></div>
+        <div class="field"><span class="name">tx_hash</span> <span class="type">VARCHAR (blockchain)</span></div>
+        <div class="field"><span class="name">settled_at</span> <span class="type">TIMESTAMP</span></div>
+      </div>
+    </div>
+
+    <div class="model-card">
+      <h4>hotel_guest_assign（酒店住客碳归属）</h4>
+      <div class="model-fields">
+        <div class="field"><span class="name">id</span> <span class="type">UUID</span> <span class="pk">PK</span></div>
+        <div class="field"><span class="name">hotel_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">room_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">device_id</span> <span class="type">UUID FK</span></div>
+        <div class="field"><span class="name">guest_id</span> <span class="type">UUID FK→user</span></div>
+        <div class="field"><span class="name">check_in</span> <span class="type">DATETIME</span></div>
+        <div class="field"><span class="name">check_out</span> <span class="type">DATETIME</span></div>
+        <div class="field"><span class="name">co2_attributed_g</span> <span class="type">DECIMAL (computed)</span></div>
+        <div class="field"><span class="name">ship_preference</span> <span class="type">ENUM(home, company, accumulate)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2>系统亮点</h2>
+    </div>
+
+    <div class="card-grid">
+      <div class="card green">
+        <div class="card-icon">1</div>
+        <h3>减排轨迹可追溯</h3>
+        <p>每一克 CO₂ 减排绑定具体寄养人、设备、时间戳，区块链存证不可篡改。企业 ESG 报告中的数据可经第三方核验。</p>
+      </div>
+      <div class="card green">
+        <div class="card-icon">2</div>
+        <h3>双通道回报机制</h3>
+        <p>寄养人自由选择实物（咖啡豆邮寄）或现金（销售分红），或两者混合。收益通过智能合约自动结算，无需人工干预。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">3</div>
+        <h3>酒店代寄闭环</h3>
+        <p>住客入住即获碳归属，退房触发代寄。酒店获得 30% 分成 + 代寄服务费双重收入，同时强化绿色品牌。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">4</div>
+        <h3>寄养权可转赠</h3>
+        <p>寄养权可作为礼品卡赠送他人——「送一棵咖啡树」成为新型绿色礼品。收赠人继承剩余寄养期与全部权益。</p>
+      </div>
+      <div class="card green">
+        <div class="card-icon">5</div>
+        <h3>碳标签 QR 溯源</h3>
+        <p>每包寄养咖啡豆包装印有专属 QR 码，扫码可看完整寄养周期：哪台设备、种了多久、固碳多少、谁寄养的。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">6</div>
+        <h3>企业 ESG 一站式</h3>
+        <p>从碳减排数据采集 → ISO 14064 报告 → VCS 碳信用核销 → CDP/TCFD 披露，企业客户一条龙搞定 ESG 碳核算。</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Genesis Chronicle — Coffee Tree Fostering Service Design v1.0 &middot; 2026-07-03
+</footer>
+
+</body>
+</html>
