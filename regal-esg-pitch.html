@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regal Genesis Chronicle — 富豪酒店集团 ESG 战略提案</title>
+<style>
+:root {
+  --bg: #000000;
+  --surface: #16181c;
+  --surface-2: #1c1e22;
+  --surface-3: #202327;
+  --border: #2f3336;
+  --border-h: #3d4144;
+  --accent: #1d9bf0;
+  --accent-s: rgba(29,155,240,0.1);
+  --accent-s2: rgba(29,155,240,0.2);
+  --green: #00ba7c;
+  --green-s: rgba(0,186,124,0.1);
+  --red: #f4212e;
+  --amber: #ffd400;
+  --amber-s: rgba(255,212,0,0.1);
+  --purple: #a855f7;
+  --purple-s: rgba(168,85,247,0.1);
+  --text: #e7e9ea;
+  --text-2: #71767b;
+  --text-3: #536471;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-sm: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", "Noto Sans SC", sans-serif;
+  line-height: 1.7; -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::selection { background: var(--accent-s2); }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-h); }
+
+/* Slide System */
+.slide {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 48px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  scroll-snap-align: start;
+}
+.slide-num {
+  position: absolute;
+  top: 24px; right: 32px;
+  font-size: 12px;
+  color: var(--text-3);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.slide-tag {
+  position: absolute;
+  top: 24px; left: 32px;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.slide-content {
+  max-width: 900px;
+  width: 100%;
+}
+h1 { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 24px; }
+h2 { font-size: 36px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 20px; }
+h3 { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+h4 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+p { font-size: 17px; color: var(--text); margin-bottom: 16px; }
+.sub { font-size: 19px; color: var(--text-2); margin-bottom: 32px; line-height: 1.6; }
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.amber-text { color: var(--amber); }
+.green-text { color: var(--green); }
+.accent-text { color: var(--accent); }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border-h); }
+.card-grid {
+  display: grid;
+  gap: 16px;
+}
+.card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.card-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+}
+.stat-card .stat-value {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.stat-card .stat-label {
+  font-size: 13px;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stat-card .stat-delta {
+  font-size: 13px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* Highlight box */
+.highlight {
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin: 16px 0;
+}
+.highlight.green { background: var(--green-s); border-left: 3px solid var(--green); }
+.highlight.blue { background: var(--accent-s); border-left: 3px solid var(--accent); }
+.highlight.amber { background: var(--amber-s); border-left: 3px solid var(--amber); }
+.highlight.purple { background: var(--purple-s); border-left: 3px solid var(--purple); }
+.highlight h4 { margin-bottom: 6px; }
+.highlight p { font-size: 15px; color: var(--text-2); margin: 0; }
+
+/* Timeline */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before {
+  content: ''; position: absolute; left: 8px; top: 0; bottom: 0;
+  width: 2px; background: var(--border);
+}
+.tl-item {
+  position: relative; margin-bottom: 28px;
+}
+.tl-item::before {
+  content: ''; position: absolute; left: -28px; top: 4px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--bg);
+}
+.tl-item.green::before { background: var(--green); }
+.tl-item.amber::before { background: var(--amber); }
+.tl-time {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;
+}
+.tl-item.green .tl-time { color: var(--green); }
+.tl-item.amber .tl-time { color: var(--amber); }
+
+/* Revenue bar */
+.split-bar {
+  display: flex; height: 40px; border-radius: 8px; overflow: hidden;
+  margin: 16px 0;
+}
+.split-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+}
+.split-legend {
+  display: flex; flex-wrap: wrap; gap: 16px;
+  font-size: 13px; color: var(--text-2);
+}
+.split-legend .dot {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 50%; margin-right: 6px; vertical-align: middle;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+}
+.badge.green { background: var(--green-s); color: var(--green); }
+.badge.blue { background: var(--accent-s); color: var(--accent); }
+.badge.amber { background: var(--amber-s); color: var(--amber); }
+.badge.gray { background: var(--surface-3); color: var(--text-2); }
+
+/* Quote */
+.quote {
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--text);
+  border-left: 3px solid var(--accent);
+  padding-left: 32px;
+  margin: 32px 0;
+  font-style: italic;
+}
+.quote-author {
+  font-size: 14px;
+  color: var(--text-2);
+  font-style: normal;
+  margin-top: 12px;
+}
+
+/* CTA */
+.cta-section {
+  text-align: center;
+  padding: 48px;
+}
+.cta-btn {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 16px 48px;
+  border-radius: 999px;
+  text-decoration: none;
+  margin-top: 24px;
+  transition: opacity 0.2s;
+}
+.cta-btn:hover { opacity: 0.85; }
+
+/* Divider */
+.divider {
+  width: 60px; height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 20px 0 32px;
+}
+
+/* Table */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 14px 20px;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase; letter-spacing: 0.05em;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 14px 20px;
+  font-size: 15px;
+  border-bottom: 1px solid var(--border);
+}
+tr:last-child td { border-bottom: none; }
+
+/* Nav dots */
+.nav-dots {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 100;
+}
+.nav-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.nav-dot:hover, .nav-dot.active { background: var(--accent); }
+
+/* Brand header */
+.brand-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 32px;
+}
+.brand-logo {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--green));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #fff; font-weight: 800;
+  flex-shrink: 0;
+}
+.brand-name { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+.brand-badge {
+  font-size: 12px; color: var(--amber); font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  background: var(--amber-s); padding: 4px 12px; border-radius: 12px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.slide-content > * {
+  animation: fadeInUp 0.6s ease-out backwards;
+}
+.slide-content > *:nth-child(1) { animation-delay: 0.1s; }
+.slide-content > *:nth-child(2) { animation-delay: 0.2s; }
+.slide-content > *:nth-child(3) { animation-delay: 0.3s; }
+.slide-content > *:nth-child(4) { animation-delay: 0.4s; }
+.slide-content > *:nth-child(5) { animation-delay: 0.5s; }
+.slide-content > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Scroll snap */
+html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  h1 { font-size: 32px; }
+  h2 { font-size: 26px; }
+  .card-grid.cols-2, .card-grid.cols-3, .card-grid.cols-4 {
+    grid-template-columns: 1fr;
+  }
+  .slide { padding: 60px 20px; }
+  .nav-dots { display: none; }
+  .quote { font-size: 20px; padding-left: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- ==================== SLIDE 1: COVER ==================== -->
+<div class="slide" id="s1">
+  <span class="slide-tag">ESG Strategic Proposal</span>
+  <span class="slide-num">01 / 10</span>
+  <div class="slide-content">
+    <div class="brand-header">
+      <div class="brand-logo">G</div>
+      <div>
+        <div class="brand-name">Genesis Chronicle</div>
+      </div>
+      <div class="brand-badge">Regal</div>
+    </div>
+    <h1>当 <span class="gradient-text">Regal</span> 遇见 <span class="amber-text">Napell</span></h1>
+    <p class="sub">
+      一份献给富豪酒店集团的 ESG 战略提案<br>
+      — 如何用一棵雾化水培咖啡树，重新定义全球酒店业的碳中和未来
+    </p>
+    <div class="divider"></div>
+    <p style="color: var(--text-2); font-size: 15px;">
+      提案人：Erik Wong · Regal Genesis Chronicle 创始人<br>
+      呈递：富豪酒店集团管理层<br>
+      日期：2026 年 7 月
+    </p>
+    <p style="color: var(--text-3); font-size: 13px; margin-top: 24px;">
+      系统官网：www.jebi.space · 联系方式：erik.wong@jebi.space
+    </p>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 2: THE QUESTION ==================== -->
+<div class="slide" id="s2">
+  <span class="slide-tag">The Question</span>
+  <span class="slide-num">02 / 10</span>
+  <div class="slide-content">
+    <h2>2026 年，一家酒店凭什么被世界记住？</h2>
+    <p class="sub">
+      不是因为大堂有多高，不是因为房间有多豪华。<br>
+      而是因为每一位住客离开时，带走了一杯 <span class="green-text">碳中和的咖啡</span>。
+    </p>
+    <div class="quote">
+      "未来的奢华，不是消耗了多少资源，而是修复了多少碳。"
+      <div class="quote-author">— 全球可持续旅游委员会 (GSTC) 2025 年度报告</div>
+    </div>
+    <div class="card-grid cols-3">
+      <div class="stat-card">
+        <div class="stat-value green-text">68%</div>
+        <div class="stat-label">高端旅客愿意为</div>
+        <div class="stat-delta" style="color: var(--green);">碳中和酒店支付溢价</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value accent-text">€2.3T</div>
+        <div class="stat-label">全球 ESG 投资</div>
+        <div class="stat-delta" style="color: var(--accent);">管理规模 (2025)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value amber-text">2027</div>
+        <div class="stat-label">欧盟 CSRD 强制</div>
+        <div class="stat-delta" style="color: var(--amber);">ESG 披露合规年</div>
+      </div>
+    </div>
+    <div class="highlight blue">
+      <h4>富豪酒店的机遇</h4>
+      <p>富豪酒店集团旗下运营香港、中国内地及海外多家酒店，正值 ESG 转型关键窗口期。率先建立可量化、可追溯、可货币化的碳减排体系，将使富豪成为亚太区酒店业 ESG 标杆。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 3: THE SYSTEM ==================== -->
+<div class="slide" id="s3">
+  <span class="slide-tag">The System</span>
+  <span class="slide-num">03 / 10</span>
+  <div class="slide-content">
+    <h2>Regal Genesis Chronicle 是什么？</h2>
+    <p class="sub">
+      全球首个 <span class="accent-text">雾化水培咖啡碳减排平台</span>。<br>
+      将咖啡树种植器部署在酒店客房、大堂、餐厅，实时固碳，数据上链，产出可交易的碳信用。
+    </p>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <h3 style="color: var(--accent);">五层技术架构</h3>
+        <div class="timeline">
+          <div class="tl-item"><div class="tl-time">Layer 1</div><h4>感知层</h4><p>NDIR CO₂ 传感器、图像识别生物量追踪、能耗水耗监测</p></div>
+          <div class="tl-item"><div class="tl-time">Layer 2</div><h4>数据层</h4><p>边缘采集、时序数据库、设备注册表</p></div>
+          <div class="tl-item"><div class="tl-time">Layer 3</div><h4>计算引擎</h4><p>基线对比、固碳模型、净减排算法</p></div>
+          <div class="tl-item green"><div class="tl-time">Layer 4</div><h4>应用层</h4><p>实时仪表盘、碳证书、碳信用账本、住客门户</p></div>
+          <div class="tl-item green"><div class="tl-time">Layer 5</div><h4>服务层</h4><p>多租户管理、碳交易 API、合规审计、智能合约结算</p></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="color: var(--green);">核心碳公式</h3>
+        <div class="highlight green" style="margin-top: 16px;">
+          <h4 style="font-size: 20px; text-align: center;">净减排 = 固碳量 + 避免排放 − 设备能耗</h4>
+        </div>
+        <h3 style="margin-top: 24px; color: var(--amber);">国际标准合规</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">
+          <span class="badge green">VCS Verified Carbon Standard</span>
+          <span class="badge blue">ISO 14064</span>
+          <span class="badge amber">Gold Standard</span>
+          <span class="badge gray">CDP Disclosure</span>
+          <span class="badge gray">TCFD Report</span>
+          <span class="badge gray">LEED / Green Key / EarthCheck</span>
+        </div>
+        <h3 style="margin-top: 24px; color: var(--purple);">区块链可追溯</h3>
+        <p style="font-size: 15px; color: var(--text-2);">Polygon 链上账本 + IPFS 证书存储。每一颗咖啡豆的碳足迹，从种植到杯中，全程不可篡改。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 4: HOTEL PROXY ==================== -->
+<div class="slide" id="s4">
+  <span class="slide-tag">Hotel Proxy Service</span>
+  <span class="slide-num">04 / 10</span>
+  <div class="slide-content">
+    <h2>酒店代寄服务 — 从入住到退房的碳闭环</h2>
+    <p class="sub">
+      每间客房放一台雾化咖啡种植器。住客入住时扫码认领，退房时带走一包<span class="green-text">冠以自己名字的碳中和咖啡豆</span>。
+    </p>
+    <div class="card">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-time">CHECK-IN · 入住</div>
+          <h4>住客碳归属</h4>
+          <p>住客扫描房内二维码，系统按入住天数分配该设备产生的 CO₂ 减排量到住客个人账户。无需下载 App，即扫即用。</p>
+        </div>
+        <div class="tl-item green">
+          <div class="tl-time">DURING STAY · 住宿期间</div>
+          <h4>实时追踪</h4>
+          <p>住客在手机或房内平板上实时观看自己认领的咖啡树的 CO₂ 固碳数据、生长影像。这不仅是体验，是<span class="green-text">参与</span>。</p>
+        </div>
+        <div class="tl-item green">
+          <div class="tl-time">CHECKOUT · 退房</div>
+          <h4>代寄咖啡豆</h4>
+          <p>酒店将烘焙好的咖啡豆邮寄到住客家中或公司。包装附个性化碳减排证书 + QR 溯源码。住客带走的不是伴手礼，是<span class="amber-text">可证明的碳贡献</span>。</p>
+        </div>
+        <div class="tl-item amber">
+          <div class="tl-time">POST-STAY · 离店后</div>
+          <h4>碳信用累积</h4>
+          <p>住客的碳信用持续累积，可用于未来入住折扣或兑换。酒店获得 30% 收入分成 + 代寄服务费。</p>
+        </div>
+      </div>
+    </div>
+    <div class="highlight green">
+      <h4>这不是一个附加服务，是一个全新体验品类</h4>
+      <p>富豪将成为全球第一家让住客"亲眼看着自己喝的咖啡在固碳"的酒店品牌。这种体验不可复制。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 5: REVENUE MODEL ==================== -->
+<div class="slide" id="s5">
+  <span class="slide-tag">Revenue Model</span>
+  <span class="slide-num">05 / 10</span>
+  <div class="slide-content">
+    <h2>四分天下 — 透明的利润分配</h2>
+    <p class="sub">
+      咖啡豆销售利润按四方分账，酒店拿 30% + 代寄服务费。
+    </p>
+    <div class="card">
+      <div class="split-bar">
+        <div class="split-seg" style="background: #1d9bf0; width: 40%;">寄养人 40%</div>
+        <div class="split-seg" style="background: #00ba7c; width: 30%;">酒店 30%</div>
+        <div class="split-seg" style="background: #536471; width: 20%;">平台 20%</div>
+        <div class="split-seg" style="background: #ffd400; width: 10%; color: #000;">碳基金 10%</div>
+      </div>
+      <div class="split-legend">
+        <span><span class="dot" style="background: #1d9bf0;"></span>住客 / 寄养人</span>
+        <span><span class="dot" style="background: #00ba7c;"></span>酒店（收入分成 + 代寄费 ¥35/单）</span>
+        <span><span class="dot" style="background: #536471;"></span>平台运营</span>
+        <span><span class="dot" style="background: #ffd400;"></span>碳中和基金（用于碳抵消项目）</span>
+      </div>
+    </div>
+    <div class="card-grid cols-4">
+      <div class="stat-card">
+        <div class="stat-value accent-text">50</div>
+        <div class="stat-label">每酒店设备数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value green-text">¥84,000</div>
+        <div class="stat-label">年收入（单酒店）</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value amber-text">¥35</div>
+        <div class="stat-label">代寄费 / 单</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--purple);">30%</div>
+        <div class="stat-label">利润分成</div>
+      </div>
+    </div>
+    <div class="highlight amber">
+      <h4>如果富豪集团部署 500 台设备（10 家酒店 × 50 台）</h4>
+      <p>年增量收入：¥840,000 · 年碳减排量：~25,000 kg CO₂ · 年碳信用价值：~¥75,000 · 可生成 ISO 14064 ESG 报告 10 份</p>
+    </div>
+    <p style="color: var(--text-2); font-size: 14px;">* 以上为保守估算。实际收入取决于入住率、设备稼动率及碳信用市场价格波动。</p>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 6: ESG REPORTING ==================== -->
+<div class="slide" id="s6">
+  <span class="slide-tag">ESG Reporting</span>
+  <span class="slide-num">06 / 10</span>
+  <div class="slide-content">
+    <h2>一份报告，全球通行</h2>
+    <p class="sub">
+      Regal Genesis Chronicle 自动生成符合国际标准的 ESG 报告，直接用于监管披露和投资者沟通。
+    </p>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <h3 style="color: var(--accent);">自动化报告矩阵</h3>
+        <div class="table-wrap" style="margin-top: 12px;">
+          <table>
+            <tr><th>报告类型</th><th>标准</th><th>用途</th></tr>
+            <tr><td>碳减排证书</td><td>ISO 14064</td><td>单次/年度</td></tr>
+            <tr><td>碳信用核销</td><td>VCS Registry</td><td>碳中和声明</td></tr>
+            <tr><td>CDP 披露</td><td>Scope 1/2/3</td><td>投资者</td></tr>
+            <tr><td>TCFD 报告</td><td>气候相关财务</td><td>监管合规</td></tr>
+            <tr><td>年度白皮书</td><td>全生命周期</td><td>品牌传播</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="color: var(--green);">绿色认证加速器</h3>
+        <div class="highlight green" style="margin-top: 12px;">
+          <h4>LEED 认证</h4>
+          <p>碳减排数据直接贡献 LEED Existing Buildings 评分中的"创新与区域优先"类别</p>
+        </div>
+        <div class="highlight blue">
+          <h4>Green Key 认证</h4>
+          <p>雾化种植器满足 Green Key "可持续实践"要求，加分项明确</p>
+        </div>
+        <div class="highlight amber">
+          <h4>EarthCheck 认证</h4>
+          <p>实时碳监测数据可直接导入 EarthCheck Benchmarking 系统</p>
+        </div>
+      </div>
+    </div>
+    <div class="highlight purple">
+      <h4>富豪集团的 ESG 差异化</h4>
+      <p>大多数酒店的 ESG 报告停留在"减少了多少能耗"——这是防御性的。富豪可以做到"我们种了多少棵树、固了多少碳、住客带走了多少包碳中和咖啡"——这是进攻性的。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 7: THE STORY ==================== -->
+<div class="slide" id="s7">
+  <span class="slide-tag">The Story</span>
+  <span class="slide-num">07 / 10</span>
+  <div class="slide-content">
+    <h2>一个住客的故事</h2>
+    <p class="sub">— 当 ESG 变成可以触摸、可以品尝、可以分享的体验</p>
+    <div class="card" style="padding: 32px;">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-time">DAY 1 · 入住富豪酒店香港</div>
+          <h4>一位来自伦敦的商务旅客走进客房</h4>
+          <p>她注意到窗台上有一台优雅的雾化种植器，旁边一张卡片："这是您在住宿期间的咖啡树。扫描二维码，看看它今天为地球减了多少碳。"</p>
+        </div>
+        <div class="tl-item green">
+          <div class="tl-time">DAY 2 · 住宿中</div>
+          <h4>她打开了手机</h4>
+          <p>实时数据：她的树在过去 24 小时固碳 0.3 kg CO₂。生长影像以延时摄影呈现。她拍了一张截图发到 LinkedIn："我住的酒店在帮我种咖啡树。"</p>
+        </div>
+        <div class="tl-item green">
+          <div class="tl-time">DAY 3 · 退房</div>
+          <h4>前台递上一个精美包装</h4>
+          <p>200g 烘焙咖啡豆，包装上的碳标签写着："本批次咖啡由富豪酒店 AERO-001 设备种植，固碳 2.1 kg CO₂。碳减排证书编号：ISO-14064-2026-0427。"</p>
+        </div>
+        <div class="tl-item amber">
+          <div class="tl-time">3 个月后</div>
+          <h4>她收到了一封邮件</h4>
+          <p>她认领的那棵树被采收了。她的碳信用账户到账 1.2 VCU。附赠一张 PDF 证书，可纳入公司 ESG 报告。她用这张证书说服了 CFO，公司明年的年会定在富豪酒店。</p>
+        </div>
+        <div class="tl-item">
+          <div class="tl-time">1 年后</div>
+          <h4>她成了富豪酒店的忠诚会员</h4>
+          <p>不是因为积分，不是因为房型，而是因为"这是世界上唯一一家让我亲手参与碳减排的酒店"。她开始在社交媒体上自发传播。</p>
+        </div>
+      </div>
+    </div>
+    <div class="quote">
+      "最好的 ESG 策略，不是写进报告里，而是写进客人的故事里。"
+      <div class="quote-author">— Regal Genesis Chronicle 设计理念</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 8: GLOBAL VISION ==================== -->
+<div class="slide" id="s8">
+  <span class="slide-tag">Global Vision</span>
+  <span class="slide-num">08 / 10</span>
+  <div class="slide-content">
+    <h2>从香港到全球 — 富豪引领酒店业 ESG 新标准</h2>
+    <p class="sub">
+      三阶段路线图，将富豪从区域酒店品牌升级为全球 ESG 标杆。
+    </p>
+    <div class="card-grid cols-3">
+      <div class="card" style="border-color: var(--accent);">
+        <div class="badge blue" style="margin-bottom: 12px;">Phase 1 · 2026 Q3-Q4</div>
+        <h3 style="color: var(--accent);">香港试点</h3>
+        <p style="font-size: 15px; color: var(--text-2);">在富豪香港酒店部署 50 台设备。跑通入住→固碳→代寄全链路。产出首份 ISO 14064 报告。建立行业首个"碳中和客房"品类。</p>
+        <div class="highlight blue" style="margin: 12px 0 0;">
+          <p style="font-size: 13px;">目标：媒体声量 + 首批碳信用发行</p>
+        </div>
+      </div>
+      <div class="card" style="border-color: var(--green);">
+        <div class="badge green" style="margin-bottom: 12px;">Phase 2 · 2027</div>
+        <h3 style="color: var(--green);">大中华区扩展</h3>
+        <p style="font-size: 15px; color: var(--text-2);">推广至富豪中国内地全部酒店。设备规模 500 台。接入 CDP 披露系统。发布首份《富豪集团碳中和白皮书》。</p>
+        <div class="highlight green" style="margin: 12px 0 0;">
+          <p style="font-size: 13px;">目标：行业认证 + 投资者认可</p>
+        </div>
+      </div>
+      <div class="card" style="border-color: var(--amber);">
+        <div class="badge amber" style="margin-bottom: 12px;">Phase 3 · 2028-2030</div>
+        <h3 style="color: var(--amber);">全球输出</h3>
+        <p style="font-size: 15px; color: var(--text-2);">向全球酒店联盟伙伴输出"Regal Carbon Suite"标准。设备规模 5,000+。碳信用年发行量超 10,000 VCU。富豪成为酒店业 ESG 基础设施。</p>
+        <div class="highlight amber" style="margin: 12px 0 0;">
+          <p style="font-size: 13px;">目标：全球标准制定者地位</p>
+        </div>
+      </div>
+    </div>
+    <div class="card-grid cols-4" style="margin-top: 16px;">
+      <div class="stat-card">
+        <div class="stat-value accent-text">5,000+</div>
+        <div class="stat-label">设备（2030 目标）</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value green-text">250T</div>
+        <div class="stat-label">年 CO₂ 减排</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value amber-text">10K+</div>
+        <div class="stat-label">年 VCU 发行</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--purple);">#1</div>
+        <div class="stat-label">酒店业 ESG 排名</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 9: WHY NOW ==================== -->
+<div class="slide" id="s9">
+  <span class="slide-tag">Why Now</span>
+  <span class="slide-num">09 / 10</span>
+  <div class="slide-content">
+    <h2>为什么是现在？为什么是富豪？</h2>
+    <p class="sub">
+      窗口期不会永远打开。先入者定义标准，后入者只能跟随。
+    </p>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <h3 style="color: var(--red);">不做的代价</h3>
+        <div style="margin-top: 16px;">
+          <div style="margin-bottom: 16px;">
+            <span class="badge gray">2027</span>
+            <p style="font-size: 15px; margin-top: 6px;">欧盟 CSRD 强制要求所有在欧上市企业披露 Scope 3 排放。富豪的国际旅客市场将直接受影响。</p>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <span class="badge gray">2028</span>
+            <p style="font-size: 15px; margin-top: 6px;">港交所 ESG 披露要求升级为"不披露即解释"。投资者将用脚投票。</p>
+          </div>
+          <div>
+            <span class="badge gray">2030</span>
+            <p style="font-size: 15px; margin-top: 6px;">全球酒店业碳中和承诺集中到期。届时再布局，成本是现在的 5-10 倍。</p>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="color: var(--green);">先做的红利</h3>
+        <div style="margin-top: 16px;">
+          <div style="margin-bottom: 16px;">
+            <span class="badge green">品牌</span>
+            <p style="font-size: 15px; margin-top: 6px;">"全球第一家碳中和咖啡酒店" — 这个标签一旦占领，竞争对手无法抢走。</p>
+          </div>
+          <div style="margin-bottom: 16px;">
+            <span class="badge blue">数据</span>
+            <p style="font-size: 15px; margin-top: 6px;">率先积累的碳减排数据 = 行业基准。后来者只能引用富豪的标准。</p>
+          </div>
+          <div>
+            <span class="badge amber">碳信用</span>
+            <p style="font-size: 15px; margin-top: 6px;">VCS 碳信用价格 2020-2025 年涨了 300%。早期发行者享受价格红利。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="highlight green">
+      <h4>Regal × Napell — 命名的天意</h4>
+      <p>"Regal" 意为"皇家的、尊贵的"。富豪酒店集团（Regal Hotels）与 Napell 的相遇，不是巧合，是品牌的自然延伸。富豪不仅在经营酒店，更在定义下一个时代的"尊贵"标准。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SLIDE 10: CALL TO ACTION ==================== -->
+<div class="slide" id="s10">
+  <span class="slide-tag">Call to Action</span>
+  <span class="slide-num">10 / 10</span>
+  <div class="slide-content cta-section">
+    <h2>下一步</h2>
+    <p class="sub" style="margin-bottom: 40px;">
+      我们不需要一个完美的计划才开始。<br>
+      我们需要一棵树，一间房，一个住客，一个开始。
+    </p>
+    <div class="card-grid cols-3">
+      <div class="card">
+        <div class="badge blue" style="margin-bottom: 8px;">STEP 1</div>
+        <h4>概念验证 (4 周)</h4>
+        <p style="font-size: 14px; color: var(--text-2);">在富豪香港酒店一间客房部署 1 台设备。验证技术可行性、住客体验、操作流程。</p>
+      </div>
+      <div class="card">
+        <div class="badge green" style="margin-bottom: 8px;">STEP 2</div>
+        <h4>楼层试点 (8 周)</h4>
+        <p style="font-size: 14px; color: var(--text-2);">扩展至一个楼层（10-20 台）。跑通代寄服务。收集住客反馈。产出首份碳减排数据。</p>
+      </div>
+      <div class="card">
+        <div class="badge amber" style="margin-bottom: 8px;">STEP 3</div>
+        <h4>全店推广 (12 周)</h4>
+        <p style="font-size: 14px; color: var(--text-2);">全酒店部署 50 台。发行首笔 VCS 碳信用。发布 ESG 报告。启动媒体传播。</p>
+      </div>
+    </div>
+    <div class="quote" style="text-align: left; margin-top: 48px;">
+      "种一棵树最好的时间是十年前，其次是现在。<br>
+      种一棵会固碳、会上链、会变成碳信用的咖啡树——最好的时间，是今天。"
+      <div class="quote-author">— Erik Wong, Regal Genesis Chronicle</div>
+    </div>
+    <div style="margin-top: 40px;">
+      <p style="color: var(--text-2); font-size: 15px;">
+        系统演示：www.jebi.space<br>
+        WhatsApp: +852-93188252 · WeChat: +86-15800222338<br>
+        Email: erik.wong@jebi.space
+      </p>
+    </div>
+    <a href="https://www.jebi.space" class="cta-btn">访问系统官网</a>
+  </div>
+</div>
+
+<script>
+// Generate nav dots
+const slides = document.querySelectorAll('.slide');
+const navDots = document.getElementById('navDots');
+slides.forEach((slide, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'nav-dot';
+  dot.onclick = () => slide.scrollIntoView({ behavior: 'smooth' });
+  navDots.appendChild(dot);
+});
+
+// Active dot on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const idx = Array.from(slides).indexOf(entry.target);
+      document.querySelectorAll('.nav-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === idx);
+      });
+    }
+  });
+}, { threshold: 0.5 });
+slides.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
